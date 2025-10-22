@@ -1,0 +1,26 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Redirecting…</title>
+<style>
+  body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; padding: 24px; }
+</style>
+<script>
+  // 👇 앱 딥링크 (스킴과 경로는 네 앱 기준으로)
+  const appLink = 'myfirstapp://password-reset';
+
+  // Supabase가 토큰을 해시(#)나 쿼리(?)로 붙여 보내므로 둘 다 보존
+  const suffix = location.hash || location.search || '';
+
+  // 앱으로 즉시 이동
+  location.replace(appLink + suffix);
+
+  // 혹시 브라우저 정책 때문에 막히면 화면에 수동 버튼 보여주기
+  setTimeout(() => {
+    const a = document.createElement('a');
+    a.href = appLink + suffix;
+    a.textContent = '앱으로 이동이 안되면 여기를 눌러주세요';
+    document.body.appendChild(a);
+  }, 800);
+</script>
+<p>앱으로 이동 중…</p>
+
