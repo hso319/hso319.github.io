@@ -2,11 +2,19 @@
 <meta charset="utf-8" />
 <title>Redirecting…</title>
 <script>
-  // 앱 스킴 & 경로 (app.json의 scheme과 동일)
-  const appLink = 'myfirstapp://password-reset';
-  // 해시(#) 또는 쿼리(?)에 붙은 토큰을 그대로 보존
-  const suffix = location.hash || location.search || '';
-  // 앱으로 즉시 이동
-  location.replace(appLink + suffix);
+  // 1) 앱에서 넘어온 'next' 쿼리값(= 앱이 생성한 딥링크)을 받습니다.
+  const params = new URLSearchParams(location.search);
+  const next = params.get('next'); // 예: exp://.../--/password-reset
+
+  // 2) Supabase가 붙여준 토큰은 보통 # 뒤의 해시에 실립니다.
+  //    (환경에 따라 ?쿼리로 올 수도 있지만 해시가 대부분)
+  const suffix = location.hash || '';
+
+  if (next) {
+    // 3) next(앱 링크) + 해시(토큰)를 그대로 붙여서 앱으로 보내기
+    location.replace(decodeURIComponent(next) + suffix);
+  } else {
+    document.body.innerHTML = '<p style="font-family:sans-serif">앱 링크(next)가 없어 이동할 수 없습니다.</p>';
+  }
 </script>
-<p>앱으로 이동 중…</p>
+<p style="font-family:sans-serif">앱으로 이동 중…</p>
