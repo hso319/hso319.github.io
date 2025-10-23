@@ -1,20 +1,26 @@
 <!doctype html>
 <meta charset="utf-8" />
-<title>Redirecting…</title>
+<title>Relay</title>
 <script>
-  // 1) 앱에서 넘어온 'next' 쿼리값(= 앱이 생성한 딥링크)을 받습니다.
-  const params = new URLSearchParams(location.search);
-  const next = params.get('next'); // 예: exp://.../--/password-reset
+  (function () {
+    // next= 으로 전달된 앱 딥링크 (예: exp://.../--/password-reset)
+    var params = new URLSearchParams(location.search);
+    var next = params.get("next");
+    if (!next) {
+      document.body.innerText = "Missing next param.";
+      return;
+    }
 
-  // 2) Supabase가 붙여준 토큰은 보통 # 뒤의 해시에 실립니다.
-  //    (환경에 따라 ?쿼리로 올 수도 있지만 해시가 대부분)
-  const suffix = location.hash || '';
+    // Supabase가 붙여준 토큰/파라미터: location.hash 에 들어옴
+    // 예) #access_token=...&refresh_token=...&type=recovery ...
+    var hash = (location.hash || "").replace(/^#/, ""); // 앞의 # 제거
 
-  if (next) {
-    // 3) next(앱 링크) + 해시(토큰)를 그대로 붙여서 앱으로 보내기
-    location.replace(decodeURIComponent(next) + suffix);
-  } else {
-    document.body.innerHTML = '<p style="font-family:sans-serif">앱 링크(next)가 없어 이동할 수 없습니다.</p>';
-  }
+    // hash 를 쿼리로 변환해서 next 로 전달
+    // next 에 이미 ?가 있으면 & 로 이어 붙임
+    var sep = next.indexOf("?") >= 0 ? "&" : "?";
+    var url = next + (hash ? sep + hash : "");
+
+    // 실제 앱 딥링크로 이동
+    location.replace(url);
+  })();
 </script>
-<p style="font-family:sans-serif">앱으로 이동 중…</p>
