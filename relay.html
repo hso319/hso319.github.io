@@ -3,24 +3,32 @@
 <title>Relay</title>
 <script>
   (function () {
-    // next= 으로 전달된 앱 딥링크 (예: exp://.../--/password-reset)
-    var params = new URLSearchParams(location.search);
-    var next = params.get("next");
+    // 현재 URL 파싱
+    var current = new URL(location.href);
+
+    // next= (앱 딥링크: exp://.../password-reset) 꺼내기
+    var next = current.searchParams.get("next");
     if (!next) {
       document.body.innerText = "Missing next param.";
       return;
     }
 
-    // Supabase가 붙여준 토큰/파라미터: location.hash 에 들어옴
-    // 예) #access_token=...&refresh_token=...&type=recovery ...
+    // next=는 제거 (그 외 남은 쿼리 파라미터는 토큰일 수 있으니 보존)
+    current.searchParams.delete("next");
+
+    // Supabase가 해시(#)로 보낸 토큰도 보존
     var hash = (location.hash || "").replace(/^#/, ""); // 앞의 # 제거
 
-    // hash 를 쿼리로 변환해서 next 로 전달
-    // next 에 이미 ?가 있으면 & 로 이어 붙임
-    var sep = next.indexOf("?") >= 0 ? "&" : "?";
-    var url = next + (hash ? sep + hash : "");
+    // 남아있는 쿼리(예: code=...)와 해시(예: access_token=..., refresh_token=...)를 합친다
+    var leftoverQuery = current.searchParams.toString(); // code가 있으면 여기에 있음
+    var combined = leftoverQuery && hash ? leftoverQuery + "&" + hash
+                  : leftoverQuery || hash;
 
-    // 실제 앱 딥링크로 이동
-    location.replace(url);
+    // next 뒤에 붙일 구분자 결정
+    var sep = next.indexOf("?") >= 0 ? "&" : "?";
+    var finalUrl = next + (combined ? sep + combined : "");
+
+    // 앱 딥링크로 이동
+    location.replace(finalUrl);
   })();
 </script>
